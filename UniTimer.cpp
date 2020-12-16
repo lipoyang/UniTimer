@@ -16,6 +16,12 @@ UniTimerClass UniTimer;
 #elif defined(ESP8266)
 #define MSEC2CLOCK(ms)    (ms * (ESP8266_CLOCK/1000))
 
+static void timer_callback()
+{
+  timer0_write(ESP.getCycleCount() + MSEC2CLOCK(UniTimer.m_interval) );
+  UniTimer.m_handler();
+}
+
 // (4) ESP32
 //     GR-ROSE
 #elif defined(ESP32) || defined(GRROSE)
@@ -71,7 +77,7 @@ void UniTimerClass::set(int interval, void(*handler)(void))
 #elif defined(ESP8266)
     noInterrupts();
     timer0_isr_init();
-    timer0_attachInterrupt(handler);
+    timer0_attachInterrupt(timer_callback);
     timer0_write(ESP.getCycleCount() + MSEC2CLOCK(interval) );
     interrupts();
 
